@@ -83,4 +83,4 @@ app.use(router.get('/arknights_events.ics', async (ctx) => {
   // ctx.set('Content-Type', 'text/calendar')
   ctx.body = await functions.get_ics()
 }))
-app.listen(3000)
+app.listen(process.env.ARK_PORT ?? 3000)
