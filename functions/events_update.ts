@@ -2,7 +2,6 @@
 import Debug from 'debug'
 import * as uuid_fun from 'uuid'
 import sqlite3 from 'sqlite3'
-import moment from 'moment'
 import momenttz from 'moment-timezone'
 
 // Initial

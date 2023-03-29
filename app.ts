@@ -31,11 +31,17 @@ async function refresh() {
       // GPT analysis
       let gpt_result = await functions.gpt_analysis(content)
 
+      // Telegraph post
+      // let telegraph_result = await functions.telegraph_post(gpt_result.title, gpt_result.content)
+
       // Process events detail
       let events = gpt_result.events
       for (let j in events) {
         await functions.events_update(events[j])
       }
+
+      // Mark announcement as processed
+      await functions.mark_bulletin_exist(response.data.announceList[i].announceId)
     }
   } catch (error) {
     print(error)

@@ -1,7 +1,7 @@
 // Import modules
 import Debug from 'debug'
 import sqlite3 from 'sqlite3'
-import moment from 'moment'
+import momenttz from 'moment-timezone'
 
 // Initial
 const print = Debug('abg:functions/get_ics.ts')
@@ -35,8 +35,8 @@ const get_ics = async (): Promise<string> => {
     let id = event.id
     let start_time = new Date(event.start_time)
     let end_time = new Date(event.end_time)
-    let start_time_string = moment(start_time).format('YYYYMMDDTHHmmSS')
-    let end_time_string = moment(end_time).format('YYYYMMDDTHHmmSS')
+    let start_time_string = momenttz.utc(start_time).format('YYYYMMDDTHHmmSS') + 'Z'
+    let end_time_string = momenttz.utc(end_time).format('YYYYMMDDTHHmmSS') + 'Z'
     let event_string = `BEGIN:VEVENT\n` +
       `UID:${id}\n` +
       `DTSTAMP:${start_time_string}\n` +
