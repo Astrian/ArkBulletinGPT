@@ -86,8 +86,7 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
     summary = JSON.parse(summary_response.data.choices[0].message.content).summary
   } catch(error) {
     print('error')
-    print((error as any).response.data)
-    summary = "原文太长，没有省流"
+    summary = ""
   }
 
   let result = {

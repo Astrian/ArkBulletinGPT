@@ -35,6 +35,7 @@ const events_update = async (event: {name: string, "start_time": {"year": number
   let end_time = momenttz().tz('Asia/Shanghai').set({year: event.end_time.year, month: event.end_time.month - 1, date: event.end_time.day, hour: event.end_time.hour, minute: event.end_time.minute, second: 0, millisecond: 0})
   print(`start: ${start_time.valueOf()}`)
   print(`end: ${end_time.valueOf()}`)
+  if (isNaN(start_time.valueOf()) || isNaN(end_time.valueOf())) return
   let params = [uuid, event.name, start_time.valueOf(), end_time.valueOf(), event.detail]
   await db_promise(sql, params)
 }

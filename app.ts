@@ -55,8 +55,8 @@ async function refresh() {
       // Telegram bot push
       let bot = new Bot(process.env.TELEGRAM_BOT_TOKEN ?? "")
       let msg_content = ""
-      if (gpt_result.summary !== "" && gpt_result.summary) msg_content = `<b>新游戏内公告</b>：${push_url.replace(/-/g, '\\-')}\n省流：${gpt_result.summary.replace(/\#/g, '').replace(/\*/g, '\*').replace(/-/g, '\\-')}\n${response.data.announceList[i].group === 'SYSTEM' ? '\\#系统公告' : '\\#活动通知'}`
-      else msg_content = `<b>新游戏内公告</b>：${push_url}\n${response.data.announceList[i].group === 'SYSTEM' ? '#系统公告' : '#活动通知'}`.replace(/\./g, '\\.').replace(/-/g, '\\-')
+      if (gpt_result.summary !== "" && gpt_result.summary) msg_content = `<b>新游戏内公告</b>：${push_url}\n省流：${gpt_result.summary}\n${response.data.announceList[i].group === 'SYSTEM' ? '#系统公告' : '#活动通知'}`
+      else msg_content = `<b>新游戏内公告</b>：${push_url}\n${response.data.announceList[i].group === 'SYSTEM' ? '#系统公告' : '#活动通知'}`
       print(msg_content)
       await bot.api.sendMessage(
         process.env.ARK_CHATID ?? 0,
