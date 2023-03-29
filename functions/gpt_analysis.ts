@@ -51,7 +51,7 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
   try {
     let events_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        'Authorization': `Bearer ${process.env.ARK_OPENAI_API_KEY}`
       }
     })
     events = JSON.parse(events_response.data.choices[0].message.content)
@@ -80,7 +80,7 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
   try {
     let summary_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        'Authorization': `Bearer ${process.env.ARK_OPENAI_API_KEY}`
       }
     })
     summary = JSON.parse(summary_response.data.choices[0].message.content).summary

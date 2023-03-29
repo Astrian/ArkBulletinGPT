@@ -53,7 +53,7 @@ async function refresh() {
       let push_url = await functions.telegraph_post(content, response.data.announceList[i].webUrl, response.data.announceList[i].title.replace(/[\r\n]/g,""))
 
       // Telegram bot push
-      let bot = new Bot(process.env.TELEGRAM_BOT_TOKEN ?? "")
+      let bot = new Bot(process.env.ARK_TELEGRAM_BOT_TOKEN ?? "")
       let msg_content = ""
       if (gpt_result.summary !== "" && gpt_result.summary) msg_content = `<b>新游戏内公告</b>：${push_url}\n省流：${gpt_result.summary}\n${response.data.announceList[i].group === 'SYSTEM' ? '#系统公告' : '#活动通知'}`
       else msg_content = `<b>新游戏内公告</b>：${push_url}\n${response.data.announceList[i].group === 'SYSTEM' ? '#系统公告' : '#活动通知'}`
