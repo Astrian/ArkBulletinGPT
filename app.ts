@@ -25,6 +25,8 @@ async function refresh() {
       // Parse bulletin contents
       let content = await functions.web_paraser(response.data.announceList[i].webUrl)
 
+      // GPT analysis
+      let gpt_result = await functions.gpt_analysis(content)
     }
   } catch (error) {
     print(error)
