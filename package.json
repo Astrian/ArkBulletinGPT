@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "DEBUG=abg:* nodemon app.ts",
     "start": "tsc --build && NODE_ENV=production pm2 start dist/app.js --name arkbulletingpt",
-    "stop": "pm2 stop arkbulletinbot && pm2 delete arkbulletingpt",
+    "stop": "pm2 stop arkbulletingpt && pm2 delete arkbulletingpt",
     "clean": "rm -rf dist"
   },
   "dependencies": {

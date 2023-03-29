@@ -18,14 +18,12 @@ dotenv.config()
 const app = new koa()
 
 // Recursion refresh
-/* let rule = new schedule.RecurrenceRule()
+let rule = new schedule.RecurrenceRule()
 rule.second = [0, 30]
 
 const job = schedule.scheduleJob(rule, () => {
   refresh()
-}) */
-
-refresh()
+})
 
 // Use axios to fetch json data
 async function refresh() {
