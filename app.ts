@@ -33,7 +33,8 @@ async function refresh() {
       let exist = await functions.check_bulletin_exist(response.data.announceList[i].announceId)
       if (exist) continue
 
-      // print(response.data.announceList[i])
+      // Mark announcement as processed
+      await functions.mark_bulletin_exist(response.data.announceList[i].announceId)
       
       // Parse bulletin contents
       let content = await functions.web_paraser(response.data.announceList[i].webUrl)
@@ -63,9 +64,6 @@ async function refresh() {
           parse_mode: 'HTML'
         }
       )
-
-      // Mark announcement as processed
-      await functions.mark_bulletin_exist(response.data.announceList[i].announceId)
     }
   } catch (error) {
     print(error)
