@@ -3,7 +3,16 @@
   "version": "1.0.0",
   "main": "app.ts",
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.2"
+  },
+  "scripts": {
+    "dev": "DEBUG=abg:* nodemon app.ts"
+  },
+  "dependencies": {
+    "@types/debug": "^4.1.7",
+    "debug": "^4.3.4"
   }
 }
