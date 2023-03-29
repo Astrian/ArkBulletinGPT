@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import axios from 'axios'
 import koa from 'koa'
 import router from 'koa-route'
+import { Bot } from 'grammy'
 
 // Import functions
 import * as functions from './functions'
@@ -31,14 +32,24 @@ async function refresh() {
       // GPT analysis
       let gpt_result = await functions.gpt_analysis(content)
 
-      // Telegraph post
-      // let telegraph_result = await functions.telegraph_post(gpt_result.title, gpt_result.content)
-
       // Process events detail
       let events = gpt_result.events
       for (let j in events) {
         await functions.events_update(events[j])
       }
+
+      // Telegraph post
+      let push_url = await functions.telegraph_post(content, response.data.announceList[i].webUrl)
+
+      // Telegram bot push
+      let bot = new Bot(process.env.TELEGRAM_BOT_TOKEN ?? "")
+      await bot.api.sendMessage(
+        process.env.ARK_CHATID ?? 0,
+        `*新游戏内公告*：${push_url}\n省流：${gpt_result.summary}\n${response.data.announceList[i].group === 'SYSTEM' ? '\\#系统公告' : '\\#活动通知'}`,
+        {
+          parse_mode: 'MarkdownV2'
+        }
+      )
 
       // Mark announcement as processed
       await functions.mark_bulletin_exist(response.data.announceList[i].announceId)
