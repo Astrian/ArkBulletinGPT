@@ -1,12 +1,17 @@
 // Import modules
 import Debug from 'debug'
 import axios from 'axios'
+import { JSDOM } from 'jsdom'
 
 // Initial
 let print = Debug('abg:functions/gpt_analysis.ts')
 
-const gpt_analysis = async (content: string): Promise<{summary: string, events: [{name: string, "start_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "end_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "detail": string}]}> => {
+const gpt_analysis = async (content: string): Promise<{summary: string, events: {name: string, "start_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "end_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "detail": string}[]}> => {
   print('gpt_analysis()')
+
+  // Parse HTML
+  let jsdom = new JSDOM(content)
+  let contentRaw = jsdom.window.document.getElementsByClassName("content").item(0) ? jsdom.window.document.getElementsByClassName("content").item(0) : jsdom.window.document.getElementsByClassName("cover").item(0)
 
   // Get now time
   let now = new Date()
@@ -22,7 +27,6 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
   - 有可能会有多个活动在同一公告中
   - 输出时间时请使用毫秒时间戳格式
   - 公告发布时间是 ${now_time}，请按照此时间进行活动时间的计算
-  - 整个公告有可能只有一张图片，如遇此情况，请返回空数组
   - 公告中有可能不包含活动有效信息，如遇此情况，请返回空数组
   - 活动详情请你进行精炼与总结
   - 如果活动与「危机合约」有关，请在活动名称中标注「危机合约」字样
@@ -39,19 +43,25 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
       },
       {
         "role": "user",
-        "content": content
+        "content": contentRaw?.textContent
       }
     ]
   }
-  let events_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-    }
-  })
+  let events: {name: string, "start_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "end_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "detail": string}[] = []
+  try {
+    let events_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      }
+    })
+    events = JSON.parse(events_response.data.choices[0].message.content)
+  } catch (error) {
+    print('error')
+    print(contentRaw?.textContent)
+    events = []
+  }
 
-  print(events_response.data.choices[0].message.content)
-  const events = JSON.parse(events_response.data.choices[0].message.content)
-
+  let summary = ""
   // Set prompt
   prompt = `以下是手游《明日方舟》的公告网页 HTML，请详细总结公告内容，以 JSON 格式输出（模板：{"summary": ""}）。如果页面只有一张带链接的图片，summary 请返回空字符串。`
   body = {
@@ -67,13 +77,19 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
       }
     ]
   }
-  let summary_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-    }
-  })
+  try {
+    let summary_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      }
+    })
+    summary = JSON.parse(summary_response.data.choices[0].message.content).summary
+  } catch(error) {
+    print('error')
+    print((error as any).response.data)
+    summary = "原文太长，没有省流"
+  }
 
-  const summary = JSON.parse(summary_response.data.choices[0].message.content).summary
   let result = {
     summary,
     events
@@ -83,3 +99,14 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
 }
 
 export { gpt_analysis }
+
+type JsonNode = {
+  tag: string,
+  attrs?: Attrs,
+  children?: (JsonNode | string | null)[] 
+}
+
+type Attrs = {
+  href?: string,
+  src?: string
+}

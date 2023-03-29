@@ -7,6 +7,7 @@ import axios from 'axios'
 import koa from 'koa'
 import router from 'koa-route'
 import { Bot } from 'grammy'
+import schedule from "node-schedule"
 
 // Import functions
 import * as functions from './functions'
@@ -15,6 +16,16 @@ import * as functions from './functions'
 const print = Debug('abg:app.ts')
 dotenv.config()
 const app = new koa()
+
+// Recursion refresh
+/* let rule = new schedule.RecurrenceRule()
+rule.second = [0, 30]
+
+const job = schedule.scheduleJob(rule, () => {
+  refresh()
+}) */
+
+refresh()
 
 // Use axios to fetch json data
 async function refresh() {
@@ -39,15 +50,19 @@ async function refresh() {
       }
 
       // Telegraph post
-      let push_url = await functions.telegraph_post(content, response.data.announceList[i].webUrl)
+      let push_url = await functions.telegraph_post(content, response.data.announceList[i].webUrl, response.data.announceList[i].title.replace(/[\r\n]/g,""))
 
       // Telegram bot push
       let bot = new Bot(process.env.TELEGRAM_BOT_TOKEN ?? "")
+      let msg_content = ""
+      if (gpt_result.summary !== "" && gpt_result.summary) msg_content = `<b>新游戏内公告</b>：${push_url.replace(/-/g, '\\-')}\n省流：${gpt_result.summary.replace(/\#/g, '').replace(/\*/g, '\*').replace(/-/g, '\\-')}\n${response.data.announceList[i].group === 'SYSTEM' ? '\\#系统公告' : '\\#活动通知'}`
+      else msg_content = `<b>新游戏内公告</b>：${push_url}\n${response.data.announceList[i].group === 'SYSTEM' ? '#系统公告' : '#活动通知'}`.replace(/\./g, '\\.').replace(/-/g, '\\-')
+      print(msg_content)
       await bot.api.sendMessage(
         process.env.ARK_CHATID ?? 0,
-        `*新游戏内公告*：${push_url}\n省流：${gpt_result.summary}\n${response.data.announceList[i].group === 'SYSTEM' ? '\\#系统公告' : '\\#活动通知'}`,
+        msg_content,
         {
-          parse_mode: 'MarkdownV2'
+          parse_mode: 'HTML'
         }
       )
 
@@ -58,8 +73,6 @@ async function refresh() {
     print(error)
   }
 }
-
-refresh()
 
 // HTTP server
 app.use(router.get('/', async (ctx) => {

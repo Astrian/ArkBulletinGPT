@@ -6,7 +6,7 @@ import axios from 'axios'
 // Initial
 let print = Debug('abg:functions/telegraph_post.ts')
 
-const telegraph_post = async (html: string, url: string): Promise<string> => {
+const telegraph_post = async (html: string, url: string, ori_title: string): Promise<string> => {
   let jsdom = new JSDOM(html)
 
   print("Processing title...")
@@ -14,7 +14,7 @@ const telegraph_post = async (html: string, url: string): Promise<string> => {
   title = title?.replace("\n", "").replace(/(^\s*)/g, "").replace(/(\s*$)/g, "")
   if (!title) {
     print('no title.')
-    title = ''
+    title = ori_title
   }
   print(title)
 
@@ -43,7 +43,8 @@ const telegraph_post = async (html: string, url: string): Promise<string> => {
   data += `content=${JSON.stringify(content)}`
   print(data)
   let telegrapharticle = await axios.post('https://api.telegra.ph/createPage', data)
-  return(telegrapharticle.data.ok ? telegrapharticle.data.result.url.replace(/\./g, '\\.').replace(/-/g, '\\-') : url)
+  print(telegrapharticle.data)
+  return(telegrapharticle.data.ok ? telegrapharticle.data.result.url : url)
 }
 
 export { telegraph_post }

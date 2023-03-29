@@ -22,10 +22,14 @@ const db_promise = (sql: string, params: any): Promise<any> => {
 }
 
 const events_update = async (event: {name: string, "start_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "end_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "detail": string}) => {
+  print(event)
+  // Event filter
+  // If some field is empty, skip this event
+  if (event.name === '' || !event.start_time || !event.end_time || event.detail === '' || !event.name || !event.detail) 
+    return
   // Generate an UUID
   let uuid = uuid_fun.v4()
   // Write to database
-  // Timezone adjust: from Beijing time to UTC
   let sql = `INSERT INTO events (id, name, start_time, end_time, detail) VALUES (?, ?, ?, ?, ?)`
   let start_time = momenttz().tz('Asia/Shanghai').set({year: event.start_time.year, month: event.start_time.month - 1, date: event.start_time.day, hour: event.start_time.hour, minute: event.start_time.minute, second: 0, millisecond: 0})
   let end_time = momenttz().tz('Asia/Shanghai').set({year: event.end_time.year, month: event.end_time.month - 1, date: event.end_time.day, hour: event.end_time.hour, minute: event.end_time.minute, second: 0, millisecond: 0})

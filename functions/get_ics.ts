@@ -43,7 +43,7 @@ const get_ics = async (): Promise<string> => {
       `DTSTART:${start_time_string}\n` +
       `DTEND:${end_time_string}\n` +
       `SUMMARY:${event.name}\n` +
-      `DESCRIPTION:${event.detail}` +
+      `DESCRIPTION:${event.detail}\n` +
       `END:VEVENT\n`
     ics_string += event_string
   }
