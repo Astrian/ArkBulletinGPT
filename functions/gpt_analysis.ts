@@ -49,10 +49,11 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
     }
   })
 
+  print(events_response.data.choices[0].message.content)
   const events = JSON.parse(events_response.data.choices[0].message.content)
 
   // Set prompt
-  prompt = `以下是手游《明日方舟》的公告网页 HTML，请详细总结公告内容。如果公告中只有图片，返回 null。`
+  prompt = `以下是手游《明日方舟》的公告网页 HTML，请详细总结公告内容，以 JSON 格式输出（模板：{"summary": ""}）。如果页面只有一张带链接的图片，summary 请返回空字符串。`
   body = {
     "model": "gpt-3.5-turbo",
     "messages": [
@@ -72,13 +73,12 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
     }
   })
 
-  const summary = summary_response.data.choices[0].message.content
+  const summary = JSON.parse(summary_response.data.choices[0].message.content).summary
   let result = {
     summary,
     events
   }
   print(result)
-  print(result.events[0].start_time)
   return result
 }
 

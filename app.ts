@@ -42,7 +42,7 @@ async function refresh() {
   }
 }
 
-// refresh()
+refresh()
 
 // HTTP server
 app.use(router.get('/', async (ctx) => {
