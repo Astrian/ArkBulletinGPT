@@ -5,11 +5,15 @@
   "license": "MIT",
   "devDependencies": {
     "nodemon": "^2.0.22",
+    "pm2": "^5.3.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.2"
   },
   "scripts": {
-    "dev": "DEBUG=abg:* nodemon app.ts"
+    "dev": "DEBUG=abg:* nodemon app.ts",
+    "start": "tsc --build && NODE_ENV=production pm2 start dist/app.js --name arkbulletingpt",
+    "stop": "pm2 stop arkbulletinbot && pm2 delete arkbulletingpt",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@types/debug": "^4.1.7",
