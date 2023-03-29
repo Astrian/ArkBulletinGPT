@@ -43,7 +43,7 @@ const get_ics = async (): Promise<string> => {
       `DTSTART:${start_time_string}\n` +
       `DTEND:${end_time_string}\n` +
       `SUMMARY:${event.name}\n` +
-      `DESCRIPTION:${event.detail}\n` +
+      `DESCRIPTION:${event.detail}\\n注：活动名称、时间与详情由 GPT 3.5 Turbo 引擎抓取，若有错误，您可以前往 ${process.env.ARK_CONTACT} 进行勘误。\n` +
       `END:VEVENT\n`
     ics_string += event_string
   }
