@@ -37,14 +37,42 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
       }
     ]
   }
-  let response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
+  let events_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
     headers: {
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
     }
   })
-  const parse_result = JSON.parse(response.data.choices[0].message.content)
-  print(parse_result)
-  return parse_result
+
+  const events = JSON.parse(events_response.data.choices[0].message.content)
+
+  // Set prompt
+  prompt = `以下是手游《明日方舟》的公告网页 HTML，请详细总结公告内容。如果公告中只有图片，返回 null。`
+  body = {
+    "model": "gpt-3.5-turbo",
+    "messages": [
+      {
+        "role": "system",
+        "content": prompt
+      },
+      {
+        "role": "user",
+        "content": content
+      }
+    ]
+  }
+  let summary_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
+    headers: {
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    }
+  })
+
+  const summary = summary_response.data.choices[0].message.content
+  let result = {
+    summary,
+    events
+  }
+  print(result)
+  return result
 }
 
 export { gpt_analysis }

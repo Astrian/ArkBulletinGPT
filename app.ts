@@ -4,13 +4,16 @@
 import Debug from 'debug'
 import dotenv from 'dotenv'
 import axios from 'axios'
+import koa from 'koa'
+import router from 'koa-route'
 
 // Import functions
 import * as functions from './functions'
 
 // Initialize
-let print = Debug('abg:app.ts')
+const print = Debug('abg:app.ts')
 dotenv.config()
+const app = new koa()
 
 // Use axios to fetch json data
 async function refresh() {
@@ -27,10 +30,26 @@ async function refresh() {
 
       // GPT analysis
       let gpt_result = await functions.gpt_analysis(content)
+
+      // Process events detail
+      let events = gpt_result.events
+      for (let j in events) {
+        await functions.events_update(events[j])
+      }
     }
   } catch (error) {
     print(error)
   }
 }
 
-refresh()
+// refresh()
+
+// HTTP server
+app.use(router.get('/', async (ctx) => {
+  ctx.body = 'Hello World'
+}
+))
+app.use(router.get('/arknights_events.ics', async (ctx) => {
+  ctx.body = await functions.get_ics()
+}))
+app.listen(3000)
