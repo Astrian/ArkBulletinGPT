@@ -1,0 +1,9 @@
+{
+  "name": "arkbulletingpt",
+  "version": "1.0.0",
+  "main": "app.ts",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^5.0.2"
+  }
+}
