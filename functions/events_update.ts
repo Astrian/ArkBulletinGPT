@@ -2,6 +2,8 @@
 import Debug from 'debug'
 import * as uuid_fun from 'uuid'
 import sqlite3 from 'sqlite3'
+import moment from 'moment'
+import momenttz from 'moment-timezone'
 
 // Initial
 const print = Debug('abg:functions/events_update.ts')
@@ -20,12 +22,17 @@ const db_promise = (sql: string, params: any): Promise<any> => {
   })
 }
 
-const events_update = async (event: {name: string, "start_time": number, "end_time": number, "detail": string}) => {
+const events_update = async (event: {name: string, "start_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "end_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "detail": string}) => {
   // Generate an UUID
   let uuid = uuid_fun.v4()
   // Write to database
+  // Timezone adjust: from Beijing time to UTC
   let sql = `INSERT INTO events (id, name, start_time, end_time, detail) VALUES (?, ?, ?, ?, ?)`
-  let params = [uuid, event.name, event.start_time, event.end_time, event.detail]
+  let start_time = momenttz().tz('Asia/Shanghai').set({year: event.start_time.year, month: event.start_time.month - 1, date: event.start_time.day, hour: event.start_time.hour, minute: event.start_time.minute, second: 0, millisecond: 0})
+  let end_time = momenttz().tz('Asia/Shanghai').set({year: event.end_time.year, month: event.end_time.month - 1, date: event.end_time.day, hour: event.end_time.hour, minute: event.end_time.minute, second: 0, millisecond: 0})
+  print(`start: ${start_time.valueOf()}`)
+  print(`end: ${end_time.valueOf()}`)
+  let params = [uuid, event.name, start_time.valueOf(), end_time.valueOf(), event.detail]
   await db_promise(sql, params)
 }
 

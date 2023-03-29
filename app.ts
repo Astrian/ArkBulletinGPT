@@ -50,6 +50,7 @@ app.use(router.get('/', async (ctx) => {
 }
 ))
 app.use(router.get('/arknights_events.ics', async (ctx) => {
+  // ctx.set('Content-Type', 'text/calendar')
   ctx.body = await functions.get_ics()
 }))
 app.listen(3000)
