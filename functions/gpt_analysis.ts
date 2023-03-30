@@ -27,7 +27,7 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
   - 如果活动与「危机合约」有关，请在活动名称中标注「危机合约」字样
   
   使用以下 JSON 模板：
-  {"events": [{"name": "", "start_time": {"year": 2023, "month": 1, "day": 1, "hour": 4, "minute": 0}, "end_time": {"year": 2023, "month": 1, "day": 15, "hour": 3, "minute": 59}, "detail": ""}], "maintance": {...}}
+  {"events": [{"name": "", "start_time": {"year": 2023, "month": 1, "day": 1, "hour": 4, "minute": 0}, "end_time": {"year": 2023, "month": 1, "day": 15, "hour": 3, "minute": 59}, "detail": ""}], "maintance": [{...}]}
   `
   let body = {
     "model": "gpt-3.5-turbo",
