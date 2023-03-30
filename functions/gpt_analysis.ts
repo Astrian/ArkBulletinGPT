@@ -60,7 +60,7 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
     print(events)
   } catch (error) {
     print('error')
-    print((error as any).response.data)
+    print((error as any))
     events = []
   }
 

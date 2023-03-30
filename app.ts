@@ -41,12 +41,14 @@ async function refresh() {
       
       // Parse bulletin contents
       let content = await functions.web_paraser(response.data.announceList[i].webUrl)
+      // calculate content character length
+      print("Content length: " + content.length)
 
       // GPT analysis
       // Cut the HTML content into 4000-character chips
       let chips = []
-      for (let i = 0; i < content.length; i += 4000) {
-        chips.push(content.slice(i, i + 4000))
+      for (let i = 0; i < content.length; i += 5000) {
+        chips.push(content.slice(i, i + 5000))
       }
       // Recursion calling
       let summaryList: string[] = []
