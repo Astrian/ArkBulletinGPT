@@ -108,3 +108,6 @@ config.json
 
 # database
 data.db
+
+## GPT debugging program
+gpt-debugging.ts
