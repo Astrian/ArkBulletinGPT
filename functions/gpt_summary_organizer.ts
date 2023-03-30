@@ -14,7 +14,7 @@ const gpt_summary_organizer = async (summaryList: string[]): Promise<string> => 
   let summary = ""
   // Set prompt
   // Multiple summaries in lines
-  let prompt = `以下是一篇手游《明日方舟》公告的不同片段的总结，请帮我从这些总结中再总结成一段带有信息量的话。`
+  let prompt = `以下是一篇手游《明日方舟》公告的不同片段的总结，请帮我从这些总结中再总结成一段带有信息量的话，要求囊括所有信息。`
   let messages = [
     {
       "role": "system",
