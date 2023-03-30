@@ -1,3 +1,5 @@
+/// <reference path="../types.d.ts" />
+
 // Import modules
 import Debug from 'debug'
 import * as uuid_fun from 'uuid'
@@ -21,7 +23,8 @@ const db_promise = (sql: string, params: any): Promise<any> => {
   })
 }
 
-const events_update = async (event: {name: string, "start_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "end_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "detail": string}) => {
+const events_update = async (event: GameEvent) => {
+  print('events_update()')
   print(event)
   // Event filter
   // If some field is empty, skip this event

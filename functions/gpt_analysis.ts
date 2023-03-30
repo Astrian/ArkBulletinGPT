@@ -1,3 +1,5 @@
+/// <reference path="../types.d.ts" />
+
 // Import modules
 import Debug from 'debug'
 import axios from 'axios'
@@ -5,7 +7,7 @@ import axios from 'axios'
 // Initial
 let print = Debug('abg:functions/gpt_analysis.ts')
 
-const gpt_analysis = async (content: string): Promise<{summary: string, events: {name: string, "start_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "end_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "detail": string}[]}> => {
+const gpt_analysis = async (content: string): Promise<{summary: string, events: GameEvent[]}> => {
   print('gpt_analysis()')
 
   // Get now time
@@ -14,7 +16,7 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
   let now_time = now.getFullYear() + ' 年 ' + (now.getMonth() + 1) + ' 月 ' + now.getDate() + ' 日 ' + now.getHours() + ':' + now.getMinutes()
 
   // Set prompt
-  let prompt = `以下是手游《明日方舟》的公告网页 HTML，请帮我从里面提取活动/维护计划的名称、起止时间和详细信息，以JSON 格式输出。
+  let prompt = `以下是手游《明日方舟》的公告网页 HTML 的片段，请帮我从里面提取活动/维护计划的名称、起止时间和详细信息，以JSON 格式输出。
   
   一些注意事项：
 
@@ -29,7 +31,7 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
   {"events": [{"name": "", "start_time": {"year": 2023, "month": 1, "day": 1, "hour": 4, "minute": 0}, "end_time": {"year": 2023, "month": 1, "day": 15, "hour": 3, "minute": 59}, "detail": ""}], "maintance": [{...}]}
   `
   let body = {
-    "model": "gpt-3.5-turbo",
+    "model": "gpt-3.5-turbo-0301",
     "messages": [
       {
         "role": "system",
@@ -41,21 +43,24 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
       }
     ]
   }
-  let events: {name: string, "start_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "end_time": {"year": number, "month": number, "day": number, "hour": number, "minute": number}, "detail": string}[] = []
+  let events: GameEvent[] = []
   try {
     let events_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
       headers: {
         'Authorization': `Bearer ${process.env.ARK_OPENAI_API_KEY}`
       }
     })
-    if (JSON.parse(events_response.data.choices[0].message.content).maintance) {
-      events = JSON.parse(events_response.data.choices[0].message.content).maintance
+    print(JSON.parse(events_response.data.choices[0].message.content).events as GameEvent[])
+    if (JSON.parse(events_response.data.choices[0].message.content).maintance.length > 0) {
+      events = JSON.parse(events_response.data.choices[0].message.content).maintance as GameEvent[]
     } else {
-      events = JSON.parse(events_response.data.choices[0].message.content).events
+      events = JSON.parse(events_response.data.choices[0].message.content).events as GameEvent[]
     }
+    print("EVENTS")
+    print(events)
   } catch (error) {
     print('error')
-    print(content)
+    print((error as any).response.data)
     events = []
   }
 
@@ -63,7 +68,7 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
   // Set prompt
   prompt = `以下是手游《明日方舟》的公告网页 HTML，请详细总结公告内容，以 JSON 格式输出（模板：{"summary": ""}）。如果页面只有一张带链接的图片，summary 请返回空字符串。`
   body = {
-    "model": "gpt-3.5-turbo",
+    "model": "gpt-3.5-turbo-0301",
     "messages": [
       {
         "role": "system",
@@ -91,19 +96,9 @@ const gpt_analysis = async (content: string): Promise<{summary: string, events: 
     summary,
     events
   }
+  print("RESULT")
   print(result)
   return result
 }
 
 export { gpt_analysis }
-
-type JsonNode = {
-  tag: string,
-  attrs?: Attrs,
-  children?: (JsonNode | string | null)[] 
-}
-
-type Attrs = {
-  href?: string,
-  src?: string
-}
