@@ -1,18 +1,6 @@
 type GameEvent = {
     "name": string,
-    "start_time": {
-        "year": number,
-        "month": number,
-        "day": number,
-        "hour": number,
-        "minute": number
-    }?,
-    "end_time": {
-        "year": number,
-        "month": number,
-        "day": number,
-        "hour": number,
-        "minute": number
-    }?,
+    "start_time": Date?,
+    "end_time": Date?,
     "detail": string
 }

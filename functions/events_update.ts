@@ -34,8 +34,8 @@ const events_update = async (event: GameEvent) => {
   let uuid = uuid_fun.v4()
   // Write to database
   let sql = `INSERT INTO events (id, name, start_time, end_time, detail) VALUES (?, ?, ?, ?, ?)`
-  let start_time = momenttz().tz('Asia/Shanghai').set({year: event.start_time.year, month: event.start_time.month - 1, date: event.start_time.day, hour: event.start_time.hour, minute: event.start_time.minute, second: 0, millisecond: 0})
-  let end_time = momenttz().tz('Asia/Shanghai').set({year: event.end_time.year, month: event.end_time.month - 1, date: event.end_time.day, hour: event.end_time.hour, minute: event.end_time.minute, second: 0, millisecond: 0})
+  let start_time = event.start_time
+  let end_time = event.end_time
   print(`start: ${start_time.valueOf()}`)
   print(`end: ${end_time.valueOf()}`)
   if (isNaN(start_time.valueOf()) || isNaN(end_time.valueOf())) return
