@@ -26,7 +26,7 @@ rule.second = [0, 30]
 const job = schedule.scheduleJob(rule, () => {
   refresh()
 })
-//refresh()
+// refresh()
 
 // Use axios to fetch json data
 async function refresh() {
