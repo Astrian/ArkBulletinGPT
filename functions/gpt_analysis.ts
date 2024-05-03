@@ -2,7 +2,7 @@
 
 // Import modules
 import Debug from 'debug'
-import axios from 'axios'
+import Anthropic from '@anthropic-ai/sdk'
 
 // Initial
 let print = Debug('abg:functions/gpt_analysis.ts')
@@ -17,7 +17,7 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
   let now_time = "2023 年 04 月 22 日"
 
   // Set prompt
-  let prompt = `以下是手游《明日方舟》的公告网页 HTML，请帮我从里面提取活动/维护计划的名称、起止时间和详细信息，并再用一段话总结公告内容。
+  let system = `以下是手游《明日方舟》的公告网页 HTML，请帮我从里面提取活动/维护计划的名称、起止时间和详细信息，并再用一段话总结公告内容。
   
   一些注意事项：
 
@@ -28,24 +28,12 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
   - 活动/维护计划详情请你进行精炼与总结
   - 如果活动与「危机合约」有关，请在活动名称中标注「危机合约」字样
   - 如果公告中只有一张图片，events 和 maintance 请返回空数组，summary 请返回空字符串
+  - 请 *千万不要* 在 JSON 内容中加插引号（\"），否则将影响 JSON 输出。
 
   使用以下 JSON 模板输出：
   
   {"events": [{"name": "", "start_time": {"year": 2023, "month": 1, "day": 1, "hour": 4, "minute": 0}, "end_time": {"year": 2023, "month": 1, "day": 15, "hour": 3, "minute": 59}, "detail": ""}], "maintance": [{...}], "summary": ""}
   `
-  let body = {
-    "model": "gpt-3.5-turbo-16k",
-    "messages": [
-      {
-        "role": "system",
-        "content": prompt
-      },
-      {
-        "role": "user",
-        "content": content
-      }
-    ]
-  }
   var result: {
     events: GameEvent[],
     maintance: GameEvent[],
@@ -56,13 +44,21 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
     summary: ""
   }
   try {
-    let events_response = await axios.post('https://api.openai.com/v1/chat/completions', body, {
-      headers: {
-        'Authorization': `Bearer ${process.env.ARK_OPENAI_API_KEY}`
-      }
+    print("start generating")
+    const anthropic = new Anthropic({
+      apiKey: process.env.ARK_ANTHROPIC_API_KEY,
     })
-    print(events_response.data.choices[0].message)
-    result = JSON.parse(events_response.data.choices[0].message.content)
+    const msg = await anthropic.messages.create({
+      model: "claude-3-opus-20240229",
+      max_tokens: 2048,
+      messages: [{
+        "role": "user",
+        "content": content
+      }],
+      system
+    })
+    print(msg.content[0].text)
+    result = JSON.parse(msg.content[0].text)
     print(result)
   } catch (error) {
     print('error')

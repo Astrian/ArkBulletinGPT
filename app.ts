@@ -23,10 +23,10 @@ const app = new koa()
 let rule = new schedule.RecurrenceRule()
 rule.second = [0, 30]
 
-const job = schedule.scheduleJob(rule, () => {
-  refresh()
-})
-// refresh()
+// const job = schedule.scheduleJob(rule, () => {
+//   refresh()
+// })
+refresh()
 
 // Use axios to fetch json data
 async function refresh() {
@@ -46,6 +46,9 @@ async function refresh() {
 
       // GPT analysis
       let analysis_result = await functions.gpt_analysis(content)
+
+      // Write to calendar ics
+      for (let i in analysis_result.events) await functions.events_update(analysis_result.events[i])
 
       // Telegraph post
       let push_url = await functions.telegraph_post(content.replace(/\&/g, '%26'), response.data.announceList[i].webUrl, response.data.announceList[i].title.replace(/[\r\n]/g,""))

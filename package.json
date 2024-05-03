@@ -19,6 +19,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.8",
     "@types/debug": "^4.1.7",
     "@types/koa": "^2.13.6",
     "@types/koa-route": "^3.2.5",
