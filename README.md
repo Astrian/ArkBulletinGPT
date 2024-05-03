@@ -21,4 +21,4 @@
 
 在各大操作系统内置或第三方的日历 app 中，订阅地址 `https://arkbulletingpt.astrian.moe/arknights_events.ics`，就可以订阅《明日方舟》国服活动日程表。
 
-大部分情况下，日程表由 GPT API 抓取。如有错误，欢迎通过 issue 提出。
+大部分情况下，日程表由 Anthropic Claude 3 Opus 生成。如有错误，欢迎通过 issue 提出。
