@@ -46,9 +46,11 @@ async function refresh() {
 
       // GPT analysis
       let analysis_result = await functions.gpt_analysis(content)
+      print(analysis_result)
 
       // Write to calendar ics
       for (let i in analysis_result.events) await functions.events_update(analysis_result.events[i])
+      for (let i in analysis_result.maintance) await functions.events_update(analysis_result.maintance[i])
 
       // Telegraph post
       let push_url = await functions.telegraph_post(content.replace(/\&/g, '%26'), response.data.announceList[i].webUrl, response.data.announceList[i].title.replace(/[\r\n]/g,""))

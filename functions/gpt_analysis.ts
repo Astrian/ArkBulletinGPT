@@ -2,8 +2,7 @@
 
 // Import modules
 import Debug from 'debug'
-import Anthropic from '@anthropic-ai/sdk'
-import xml2js from "xml2js"
+import OpenAI from 'openai'
 
 // Initial
 let print = Debug('abg:functions/gpt_analysis.ts')
@@ -30,32 +29,9 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
   - 如果活动与「危机合约」有关，请在活动名称中标注「危机合约」字样
   - 如果公告中只有一张图片，events 和 maintance 请返回空数组，summary 请返回空字符串
 
-  使用以下 XML 模板输出：
+  使用以下 JSON 模板输出：
   
-  <announcement>
-    <event>
-      <name>name</name>
-      <start_time>
-        <year>2023</year>
-        <month>1</month>
-        <day>1</day>
-        <hour>4</hour>
-        <minute>0</minute>
-      </start_time>
-      <end_time>
-        <year>2023</year>
-        <month>1</month>
-        <day>15</day>
-        <hour>3</hour>
-        <minute>59</minute>
-      </end_time>
-      <detail>event detail...</detail>
-    </event>
-    <maintance>
-      <!-- start_time, end_time, name, detail... --->
-    </maintance>
-    <summary>summary</summary>
-  </announcement>
+  {"events": [{"name": "", "start_time": {"year": 2023, "month": 1, "day": 1, "hour": 4, "minute": 0}, "end_time": {"year": 2023, "month": 1, "day": 15, "hour": 3, "minute": 59}, "detail": ""}], "maintance": [{...}], "summary": ""}
   
   `
   var result: {
@@ -69,44 +45,57 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
   }
   try {
     print("start generating")
-    const anthropic = new Anthropic({
-      apiKey: process.env.ARK_ANTHROPIC_API_KEY,
+    const openai = new OpenAI({
+      apiKey: process.env.ARK_OPENAI_API_KEY,
     })
-    const msg = await anthropic.messages.create({
-      model: "claude-3-opus-20240229",
-      max_tokens: 3096,
+    const msg = await openai.chat.completions.create({
+      model: "gpt-4-turbo-preview",
+      response_format: { type: "json_object" },
       messages: [{
+        "role": "system",
+        "content": system
+      },
+        {
         "role": "user",
         "content": content
       }],
-      system
     })
-    // Parse XML
-    let parseRes = await parseStringPromise(msg.content[0].text)
-    print(parseRes)
-    if (parseRes.announcement.event[0] === "") result.events = []
-    else {
-      result.events = parseRes.announcement.event.map((event: any) => {
-        return {
-          name: event.name[0],
-          start_time: new Date(event.start_time[0].year[0], event.start_time[0].month[0], event.start_time[0].day[0], event.start_time[0].hour[0], event.start_time[0].minute[0]),
-          end_time: new Date(event.end_time[0].year[0], event.end_time[0].month[0], event.end_time[0].day[0], event.end_time[0].hour[0], event.end_time[0].minute[0]),
-          detail: event.detail[0]
-        }
+    // Parse 
+    let parseRes = JSON.parse(msg.choices[0].message.content || "{}")
+    print(JSON.stringify(parseRes))
+    for (let i in parseRes.events) {
+      let event = parseRes.events[i]
+      // 2024-05-08T01:01:40+08:00
+      let start_time_string = `${event.start_time.year}-${dateTimeTwoDigits(event.start_time.month)}-${dateTimeTwoDigits(event.start_time.day)}T${dateTimeTwoDigits(event.start_time.hour)}:${dateTimeTwoDigits(event.start_time.minute)}:00+08:00`
+      print(`start_time_string: ${start_time_string}`)
+      let start_time = new Date(start_time_string)
+      let end_time_string = `${event.end_time.year}-${dateTimeTwoDigits(event.end_time.month)}-${dateTimeTwoDigits(event.end_time.day)}T${dateTimeTwoDigits(event.end_time.hour)}:${dateTimeTwoDigits(event.end_time.minute)}:00+08:00`
+      print(`end_time_string: ${end_time_string}`)
+      let end_time = new Date(end_time_string)
+      result.events.push({
+        name: event.name,
+        start_time: start_time,
+        end_time: end_time,
+        detail: event.detail
       })
     }
-    if (parseRes.announcement.maintance[0] === "") result.maintance = []
-    else {
-      result.maintance = parseRes.announcement.maintance.map((event: any) => {
-        return {
-          name: event.name[0],
-          start_time: new Date(event.start_time[0].year[0], event.start_time[0].month[0], event.start_time[0].day[0], event.start_time[0].hour[0], event.start_time[0].minute[0]),
-          end_time: new Date(event.end_time[0].year[0], event.end_time[0].month[0], event.end_time[0].day[0], event.end_time[0].hour[0], event.end_time[0].minute[0]),
-          detail: event.detail[0]
-        }
+    for (let i in parseRes.maintance) {
+      let event = parseRes.maintance[i]
+      // 2024-05-08T01:01:40Z
+      let start_time_string = `${event.start_time.year}-${dateTimeTwoDigits(event.start_time.month)}-${dateTimeTwoDigits(event.start_time.day)}T${dateTimeTwoDigits(event.start_time.hour)}:${dateTimeTwoDigits(event.start_time.minute)}:00+08:00`
+      print(`start_time_string: ${start_time_string}`)
+      let start_time = new Date(start_time_string)
+      let end_time_string = `${event.end_time.year}-${dateTimeTwoDigits(event.end_time.month)}-${dateTimeTwoDigits(event.end_time.day)}T${dateTimeTwoDigits(event.end_time.hour)}:${dateTimeTwoDigits(event.end_time.minute)}:00+08:00`
+      print(`end_time_string: ${end_time_string}`)
+      let end_time = new Date(end_time_string)
+      result.maintance.push({
+        name: event.name,
+        start_time: start_time,
+        end_time: end_time,
+        detail: event.detail
       })
     }
-    result.summary = parseRes.announcement.summary[0]
+    result.summary = parseRes.summary
   } catch (error) {
     print('error')
     print((error as any))
@@ -116,12 +105,6 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
 
 export { gpt_analysis }
 
-// make synchronous function into async function
-function parseStringPromise(str: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    xml2js.parseString(str, (err, result) => {
-      if (err) reject(err)
-      else resolve(result)
-    })
-  })
+function dateTimeTwoDigits(dateTime: number): string {
+  return dateTime < 10 ? '0' + dateTime : dateTime.toString()
 }

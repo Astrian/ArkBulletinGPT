@@ -36,6 +36,7 @@
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.42",
     "node-schedule": "^2.1.1",
+    "openai": "^4.42.0",
     "sqlite3": "^5.1.6",
     "uuid": "^9.0.0",
     "xml2js": "^0.6.2"

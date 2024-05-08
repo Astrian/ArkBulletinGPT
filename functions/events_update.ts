@@ -36,11 +36,12 @@ const events_update = async (event: GameEvent) => {
   let sql = `INSERT INTO events (id, name, start_time, end_time, detail) VALUES (?, ?, ?, ?, ?)`
   let start_time = event.start_time
   let end_time = event.end_time
-  print(`start: ${start_time.valueOf()}`)
-  print(`end: ${end_time.valueOf()}`)
-  if (isNaN(start_time.valueOf()) || isNaN(end_time.valueOf())) return
-  let params = [uuid, event.name, start_time.valueOf(), end_time.valueOf(), event.detail]
-  await db_promise(sql, params)
+  print(`start: ${start_time}`)
+  print(`end: ${end_time}`)
+  let params = [uuid, event.name, start_time, end_time, event.detail]
+  print(params)
+  let res = await db_promise(sql, params)
+  print(res)
 }
 
 export { events_update }
