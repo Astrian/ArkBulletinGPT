@@ -52,6 +52,7 @@ const get_ics = async (): Promise<string> => {
     `VERSION:2.0\n` +
     `PRODID:-//Astrian Zheng//ArkBulletinGPT v1.0//EN\n` +
     `CALSCALE:GREGORIAN\n` +
+    `X-WR-CALNAME:明日方舟国服公告\n` +
     ics_string +
     `END:VCALENDAR\n`
 }
