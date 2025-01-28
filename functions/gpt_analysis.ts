@@ -46,10 +46,11 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
   try {
     print("start generating")
     const openai = new OpenAI({
-      apiKey: process.env.ARK_OPENAI_API_KEY,
+      baseURL: "https://api.deepseek.com",
+      apiKey: process.env.ARK_DEEPSEEK_API_KEY,
     })
     const msg = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
+      model: "deepseek-chat",
       response_format: { type: "json_object" },
       messages: [{
         "role": "system",
