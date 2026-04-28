@@ -3,6 +3,7 @@
 // Import modules
 import Debug from 'debug'
 import OpenAI from 'openai'
+import { decode } from '@toon-format/toon'
 
 // Initial
 let print = Debug('abg:functions/gpt_analysis.ts')
@@ -18,21 +19,28 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
 
   // Set prompt
   let system = `以下是手游《明日方舟》的公告网页 HTML，请帮我从里面提取活动/维护计划的名称、起止时间和详细信息，并再用一段话总结公告内容。
-  
-  一些注意事项：
 
-  - 公告中出现的所有时间以北京时间展示
-  - 有可能会有多个活动/维护计划在同一公告中
-  - 公告发布时间是 ${now_time}，请按照此时间进行活动/维护计划时间的计算
-  - 公告中有可能不包含活动/维护计划有效信息，如遇此情况，请返回空数组
-  - 活动/维护计划详情请你进行精炼与总结
-  - 如果活动与「危机合约」有关，请在活动名称中标注「危机合约」字样
-  - 如果公告中只有一张图片，events 和 maintance 请返回空数组，summary 请返回空字符串
+一些注意事项：
 
-  使用以下 JSON 模板输出：
-  
-  {"events": [{"name": "", "start_time": {"year": 2023, "month": 1, "day": 1, "hour": 4, "minute": 0}, "end_time": {"year": 2023, "month": 1, "day": 15, "hour": 3, "minute": 59}, "detail": ""}], "maintance": [{...}], "summary": ""}
-  
+- 公告中出现的所有时间以北京时间展示
+- 有可能会有多个活动/维护计划在同一公告中
+- 公告发布时间是 ${now_time}，请按照此时间进行活动/维护计划时间的计算
+- 公告中有可能不包含活动/维护计划有效信息，如遇此情况，请返回空数组
+- 活动/维护计划详情请你进行精炼与总结
+- 如果活动与「危机合约」有关，请在活动名称中标注「危机合约」字样
+- 忽略与站外平台有关的活动（例如微博、小红书、B 站激励计划等）
+- 如果公告中只有一张图片，events 和 maintance 请返回空数组，summary 请返回空字符串
+- 如果侦测到某个活动或维护详情不包含精确的开始时间和结束时间，忽略这一条目
+
+使用以下 TOON 模板输出：
+
+events[]{name,start_time,end_time,detail}:
+  「相见欢」复刻活动,2026-01-26T16:00,2026-02-09T03:59,活动详情...
+maintance[]{name,start_time,end_time,detail}:
+  闪断更新,2026-01-26T16:00,2026-01-26T16:10,维护详情...
+summary: 公告总结
+
+请在中括号 count 中填入活动或维护事项的具体数量。详情、总结中涉及数量的星号请转换为 × 符号。
   `
   var result: {
     events: GameEvent[],
@@ -46,12 +54,12 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
   try {
     print("start generating")
     const openai = new OpenAI({
-      baseURL: "https://api.deepseek.com",
-      apiKey: process.env.ARK_DEEPSEEK_API_KEY,
+      baseURL: "https://api.xiaomimimo.com/v1",
+      apiKey: process.env.ARK_MIMO_API_KEY,
     })
     const msg = await openai.chat.completions.create({
-      model: "deepseek-chat",
-      response_format: { type: "json_object" },
+      model: "mimo-v2.5",
+      temperature: 0.3,
       messages: [{
         "role": "system",
         "content": system
@@ -61,16 +69,25 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
         "content": content
       }],
     })
-    // Parse 
-    let parseRes = JSON.parse(msg.choices[0].message.content || "{}")
-    print(JSON.stringify(parseRes))
-    for (let i in parseRes.events) {
-      let event = parseRes.events[i]
+    print(msg.choices[0].message.content)
+
+    print('===')
+
+    // Parse
+    const parseRes = decode(msg.choices[0].message.content || "") as {events: {
+    	name: string,
+    	start_time: string,
+    	end_time: string,
+    	detail: string
+    }[], maintance: GameEvent[], summary: string}
+    print(parseRes)
+    for (const i in parseRes.events) {
+      const event = parseRes.events[i]
       // 2024-05-08T01:01:40+08:00
-      let start_time_string = `${event.start_time.year}-${dateTimeTwoDigits(event.start_time.month)}-${dateTimeTwoDigits(event.start_time.day)}T${dateTimeTwoDigits(event.start_time.hour)}:${dateTimeTwoDigits(event.start_time.minute)}:00+08:00`
+      let start_time_string = `${event.start_time}:00+08:00`
       print(`start_time_string: ${start_time_string}`)
       let start_time = new Date(start_time_string)
-      let end_time_string = `${event.end_time.year}-${dateTimeTwoDigits(event.end_time.month)}-${dateTimeTwoDigits(event.end_time.day)}T${dateTimeTwoDigits(event.end_time.hour)}:${dateTimeTwoDigits(event.end_time.minute)}:00+08:00`
+      let end_time_string = `${event.end_time}:00+08:00`
       print(`end_time_string: ${end_time_string}`)
       let end_time = new Date(end_time_string)
       result.events.push({
@@ -83,10 +100,10 @@ const gpt_analysis = async (content: string): Promise<{events: GameEvent[], main
     for (let i in parseRes.maintance) {
       let event = parseRes.maintance[i]
       // 2024-05-08T01:01:40Z
-      let start_time_string = `${event.start_time.year}-${dateTimeTwoDigits(event.start_time.month)}-${dateTimeTwoDigits(event.start_time.day)}T${dateTimeTwoDigits(event.start_time.hour)}:${dateTimeTwoDigits(event.start_time.minute)}:00+08:00`
+      let start_time_string = `${event.start_time}:00+08:00`
       print(`start_time_string: ${start_time_string}`)
       let start_time = new Date(start_time_string)
-      let end_time_string = `${event.end_time.year}-${dateTimeTwoDigits(event.end_time.month)}-${dateTimeTwoDigits(event.end_time.day)}T${dateTimeTwoDigits(event.end_time.hour)}:${dateTimeTwoDigits(event.end_time.minute)}:00+08:00`
+      let end_time_string = `${event.end_time}:00+08:00`
       print(`end_time_string: ${end_time_string}`)
       let end_time = new Date(end_time_string)
       result.maintance.push({

@@ -6,7 +6,7 @@ import axios from 'axios'
 // Initial
 let print = Debug('abg:functions/telegraph_post.ts')
 
-const telegraph_post = async (html: string, url: string, ori_title: string): Promise<string> => {
+const telegraph_post = async (html: string, ori_title: string): Promise<string> => {
   let jsdom = new JSDOM(html)
 
   print("Processing title...")
@@ -35,7 +35,6 @@ const telegraph_post = async (html: string, url: string, ori_title: string): Pro
   print("Parsing content...")
   let contentRaw = jsdom.window.document.getElementsByClassName("content").item(0) ? jsdom.window.document.getElementsByClassName("content").item(0) : jsdom.window.document.getElementsByClassName("cover").item(0)
   let content: (JsonNode | string | null)[] = (<JsonNode>await domParser(contentRaw || new Element())).children ?? []
-  content.push({"tag":"p","children":[{"tag": "a", "attrs": { "href": url }, "children": ["查看原公告"]}]})
   print(JSON.stringify(content))
   let data = ``
   data += `access_token=${process.env.ARK_TGPHTOKEN}&`
@@ -44,7 +43,7 @@ const telegraph_post = async (html: string, url: string, ori_title: string): Pro
   print(data)
   let telegrapharticle = await axios.post('https://api.telegra.ph/createPage', data)
   print(telegrapharticle.data)
-  return(telegrapharticle.data.ok ? telegrapharticle.data.result.url : url)
+  return(telegrapharticle.data.ok ? telegrapharticle.data.result.url : '')
 }
 
 export { telegraph_post }
@@ -52,7 +51,7 @@ export { telegraph_post }
 type JsonNode = {
   tag: string,
   attrs?: Attrs,
-  children?: (JsonNode | string | null)[] 
+  children?: (JsonNode | string | null)[]
 }
 
 type Attrs = {
