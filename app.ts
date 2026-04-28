@@ -33,7 +33,7 @@ async function refresh() {
   try {
     let response = await axios.get('https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS')
     // for (let i in response.data.announceList) {
-      await processAnnouncement(response.data.data.list[5])
+      await processAnnouncement(response.data.data.list[0])
     // }
     // await processAnnouncement(response.data.announceList[0])
   } catch (error) {
@@ -64,23 +64,32 @@ async function processAnnouncement(announcement: { cid: string; title: string; c
 	  for (let i in analysis_result.maintance) await functions.events_update(analysis_result.maintance[i])
 
 	  // Telegraph post
-	  push_url = await functions.telegraph_post(content.data.content, content.data.title)
+	  push_url = await functions.telegraph_post(functions.unescape_html(content.data.content), content.data.header)
 		print(push_url)
   }
 
   // // Telegram bot push
   let bot = new Bot(process.env.ARK_TELEGRAM_BOT_TOKEN ?? "")
-  let msg_content = ""
-  if (content.data.displayType === 1) msg_content = `<b>新游戏内公告</b>：${push_url}\n省流：${analysis_result.summary}\n${announcementCategoryTags(announcement.category)}`
-  else msg_content = `<b>新游戏内公告</b>：<a href="${content.data.jumpLink}">${content.data.title.replace(/[\\r\\n]/g, "")}</a>\n${announcementCategoryTags(announcement.category)}`
-  print(msg_content)
-  await bot.api.sendMessage(
-    process.env.ARK_CHATID ?? 0,
-    msg_content,
-    {
-      parse_mode: 'HTML'
-    }
-  )
+  if (content.data.displayType === 1) {
+	 	await bot.api.sendMessage(
+	    process.env.ARK_CHATID ?? 0,
+	    `<b>新游戏内公告</b>：${push_url}\n省流：${analysis_result.summary}\n${announcementCategoryTags(announcement.category)}`,
+	    {
+	      parse_mode: 'HTML'
+	    }
+	  )
+  }
+  else {
+   	await bot.api.sendPhoto(
+   		process.env.ARK_CHATID ?? 0,
+   		content.data.bannerImageUrl,
+   		{
+     		caption: `<b>新游戏内公告</b>：<a href="${content.data.jumpLink}">${content.data.title.replace(/[\\r\\n]/g, "")}</a>\n${announcementCategoryTags(announcement.category)}`,
+   			parse_mode: 'HTML'
+   		}
+   	)
+  }
+
 }
 
 // HTTP server
