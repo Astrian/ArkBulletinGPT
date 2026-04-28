@@ -19,7 +19,7 @@ const db_promise = (sql: string, params: any): Promise<any> => {
   })
 }
 
-const mark_bulletin_exist = async (id: number) => {
+const mark_bulletin_exist = async (id: string) => {
   // Check if bulletin exist
   let sql = `SELECT * FROM bulletins WHERE id = ?`
   let params = [id]

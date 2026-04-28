@@ -23,31 +23,32 @@ const app = new koa()
 let rule = new schedule.RecurrenceRule()
 rule.second = [0, 30]
 
-// const job = schedule.scheduleJob(rule, () => {
-//   refresh()
-// })
-refresh()
+const job = schedule.scheduleJob(rule, () => {
+  refresh()
+})
+// refresh()
 
 // Use axios to fetch json data
 async function refresh() {
+	print('refresh')
   try {
     let response = await axios.get('https://ak-webview.hypergryph.com/api/game/bulletinList?target=IOS')
-    // for (let i in response.data.announceList) {
-      await processAnnouncement(response.data.data.list[0])
-    // }
+    response.data.data.list.forEach(async (announcement: { cid: string; title: string; category: 1 | 2 | 4; displayTime: string; updatedAt: number; sticky: boolean }) => {
+      await processAnnouncement(announcement)
+    })
     // await processAnnouncement(response.data.announceList[0])
   } catch (error) {
     print(error)
   }
 }
 
-async function processAnnouncement(announcement: { cid: string; title: string; category: 1|2|4; displayTime: string; updatedAt: number; sticky: boolean }) {
+async function processAnnouncement(announcement: { cid: string; title: string; category: 1 | 2 | 4; displayTime: string; updatedAt: number; sticky: boolean }) {
 	print(announcement)
   const exist = await functions.check_bulletin_exist(announcement.cid)
   if (exist) return
 
   // Mark announcement as processed
-  // await functions.mark_bulletin_exist(announcement.announceId)
+  await functions.mark_bulletin_exist(announcement.cid)
 
   // Parse bulletin contents
   const content = await functions.web_paraser(announcement.cid)
@@ -94,7 +95,7 @@ async function processAnnouncement(announcement: { cid: string; title: string; c
 
 // HTTP server
 app.use(router.get('/', async (ctx) => {
-  ctx.body = 'Hello World'
+  ctx.redirect('/arknights_events.ics')
 }
 ))
 app.use(router.get('/arknights_events.ics', async (ctx) => {
