@@ -106,8 +106,8 @@ app.listen(process.env.ARK_PORT ?? 3000)
 
 function announcementCategoryTags(category: 1 | 2 | 4) {
 	switch (category) {
-		case 1: return '#系统公告'
-		case 2: return '#活动通知'
+		case 2: return '#系统公告'
+		case 1: return '#活动通知'
 		case 4: return '#资讯速报'
 	}
 }
